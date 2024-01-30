@@ -15,15 +15,12 @@ import {
   Text,
   useColorScheme,
   View,
+  TextInput,
+  Button,
+  Switch,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -56,6 +53,10 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+  const [text, onChangeText] = React.useState('1 + 2');
+  const [output, setOutput] = React.useState('');
+  const [isEnabled, setIsEnabled] = React.useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -76,20 +77,37 @@ function App(): React.JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+          <TextInput style={styles.input} onChangeText={onChangeText} />
+          <Switch
+            trackColor={{false: '#767577', true: '#81b0ff'}}
+            thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isEnabled}
+          />
+          <Button
+            title="Run"
+            onPress={() => {
+              try {
+                if (isEnabled) {
+                  var getVal = () => {
+                    return 'hello world';
+                  };
+                  setOutput('eval: ' + eval(text));
+                } else {
+                  const getVal = () => {
+                    return 'hello world';
+                  };
+                  // eslint-disable-next-line no-new-func
+                  const fn = new Function('getVal', 'return (' + text + ')');
+                  setOutput('new fn: ' + fn(getVal));
+                }
+              } catch (e: any) {
+                setOutput(e.toString());
+              }
+            }}
+          />
+          <Section title="Output">{output}</Section>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -112,6 +130,13 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
   },
 });
 
